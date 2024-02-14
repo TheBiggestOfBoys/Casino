@@ -98,13 +98,27 @@ namespace Casino
             hand.Clear();
         }
 
-        #region Games
+        /// <summary>
+        /// Finds the correct color of the Card's suit (Red/Black)
+        /// </summary>
+        /// <param name="card">The card to get the suit from</param>
+        /// <returns>The corresponding color</returns>
+        public static ConsoleColor GetColorFromSuit(Card card) => card.Suit switch
+        {
+            Card.Suits.Hearts => ConsoleColor.Red,
+            Card.Suits.Diamonds => ConsoleColor.Red,
+            Card.Suits.Clubs => ConsoleColor.Gray,
+            Card.Suits.Spades => ConsoleColor.Gray
+        };
+
+        #region Black Jack
         public static void BlackJack()
         {
             double startingMoney = money;
             List<Card> hand = [];
 
             Console.WriteLine("RULES OF BLACK JACK:");
+            Console.WriteLine("The goal is to get to 21, or as close as possible.  If you go over 21, you automatically lose.  All face cards count as 10 and Aces can count as either 1 or 11");
 
             byte rounds = 0;
             ConsoleKey key = ConsoleKey.Escape;
@@ -123,7 +137,7 @@ namespace Casino
                     ShowCards(hand);
                     Console.WriteLine($"Hand value: {value}");
 
-                    Console.WriteLine($"Press {ConsoleKey.Enter} to hit, and {ConsoleKey.Enter} to call");
+                    Console.WriteLine($"Press {ConsoleKey.Spacebar} to hit, and {ConsoleKey.Enter} to call");
                     while (value <= 21 && key != ConsoleKey.Enter)
                     {
                         key = Console.ReadKey().Key;
