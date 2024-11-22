@@ -5,29 +5,54 @@ using static Casino.Card;
 
 namespace Casino
 {
+    /// <summary>
+    /// The <see cref="BlackJack"/> game object.
+    /// </summary>
+    /// <param name="money">Home much money was brought in.</param>
     internal class BlackJack(int money)
     {
+        /// <summary>
+        /// The Deck the cards will be dealt from.
+        /// </summary>
         private Deck deck = Deck.CreateFullDeck();
-        private Deck playerHand = [];
-        private Deck dealerHand = [];
+        /// <summary>
+        /// The Player's hand.
+        /// </summary>
+        private List<Card> playerHand = [];
+        /// <summary>
+        /// The Dealer's hand (only one <see cref="Card"/> is visible).
+        /// </summary>
+        private List<Card> dealerHand = [];
 
+        /// <summary>
+        /// How many round have been played.
+        /// </summary>
         private byte rounds = 0;
+
+        /// <summary>
+        /// How much money you started with.
+        /// </summary>
         private readonly int startingMoney = money;
+        /// <summary>
+        /// How much money you currently have.
+        /// </summary>
         private int money = money;
 
         /// <summary>
-        /// Plays the game of Black Jack
+        /// Plays the game of <see cref="BlackJack"/>.
         /// </summary>
         /// <returns>The money left at the end of the rounds.</returns>
         public int Play()
         {
-            deck.Shuffle(); DisplayRules();
+            deck.Shuffle(); ShowRules();
             ConsoleKey key = ConsoleKey.Escape;
             Console.WriteLine("Press Q to exit");
             while (key != ConsoleKey.Q)
             {
                 if (!PromptForBet(out int bet))
+                {
                     continue;
+                }
 
                 DealInitialCards(playerHand);
                 DealInitialCards(dealerHand);
@@ -49,11 +74,17 @@ namespace Casino
                 deck.DiscardCards(playerHand);
                 deck.DiscardCards(dealerHand);
                 if (!PromptToContinue(ref key))
+                {
                     break;
+                }
             }
-            DisplayFinalResults(); return money;
+            ShowFinalResults(); return money;
         }
 
+        #region Showing Functions
+        /// <summary>
+        /// Displays the Dealer & Player's hands.
+        /// </summary>
         private void ShowHands()
         {
             Console.WriteLine();
@@ -62,7 +93,10 @@ namespace Casino
             ShowHand(dealerHand, true);
         }
 
-        private static void DisplayRules()
+        /// <summary>
+        /// Shows the rules of Black Jack.
+        /// </summary>
+        private static void ShowRules()
         {
             Console.WriteLine("RULES OF BLACK JACK:");
             Console.WriteLine("The goal is to get to 21, or as close as possible.");
@@ -70,63 +104,20 @@ namespace Casino
             Console.WriteLine("All face cards count as 10 and Aces can count as either 1 or 11");
         }
 
-        private bool PromptForBet(out int bet)
+        /// <summary>
+        /// Shows the rounds played and profit gained/lost from all the games
+        /// </summary>
+        private void ShowFinalResults()
         {
-            Console.Write("How much do you want to bet?: ");
-            return int.TryParse(Console.ReadLine(), out bet) && bet <= money;
+            Console.WriteLine($"You played {rounds} rounds, and came in with ${startingMoney}, you now have ${money}, resulting in a net of ${money - startingMoney}.");
         }
 
-        private void DealInitialCards(Deck hand)
-        {
-            deck.TransferTopCard(hand);
-            deck.TransferTopCard(hand);
-        }
-
-        private bool PlayerTurn()
-        {
-            ConsoleKey key;
-            byte value = CountValues(playerHand);
-            while (value <= 21 && (key = Console.ReadKey().Key) != ConsoleKey.Enter)
-            {
-                if (key == ConsoleKey.Spacebar)
-                {
-                    deck.TransferTopCard(playerHand);
-                    value = CountValues(playerHand);
-                    ShowHand(playerHand, false);
-                }
-            }
-            return value > 21;
-        }
-
-        private void DealerTurn()
-        {
-            while (CountValues(dealerHand) <= 16)
-            {
-                deck.TransferTopCard(dealerHand);
-            }
-        }
-
-        private void DetermineWinner(int playerValue, int dealerValue, int bet)
-        {
-            if (dealerValue > 21)
-            {
-                Console.WriteLine("Dealer busts! You win."); money += bet;
-            }
-            else if (playerValue > dealerValue)
-            {
-                Console.WriteLine($"You win! Dealer had {dealerValue}."); money += bet;
-            }
-            else if (dealerValue > playerValue)
-            {
-                Console.WriteLine($"Dealer wins with {dealerValue}. You lose {bet}."); money -= bet;
-            }
-            else
-            {
-                Console.WriteLine("It's a tie!");
-            }
-        }
-
-        private void ShowHand(Deck hand, bool isDealer)
+        /// <summary>
+        /// Displays a <see cref="Deck"/>'s <see cref="Card"/>s and their total value of the <see cref="Card"/>'s <see cref="Values"/>.
+        /// </summary>
+        /// <param name="hand">The <see cref="List{Card}"/> to display.</param>
+        /// <param name="isDealer">If the <see cref="List{Card}"/> is the dealer's deck</param>
+        private static void ShowHand(List<Card> hand, bool isDealer)
         {
             string playerName = isDealer ? "Dealer" : "Player";
             Console.Write($"{playerName}'s hand: ");
@@ -158,34 +149,125 @@ namespace Casino
 
             Console.WriteLine();
         }
+        #endregion
 
-        private static bool HasAce(Deck hand) => hand.Any(card => card.Value == Card.Values.Ace);
+        #region Prompts
+        /// <summary>
+        /// Asks how much to bet.
+        /// </summary>
+        /// <param name="bet">How much to bet</param>
+        /// <returns>If the entered bet was valid.</returns>
+        private bool PromptForBet(out int bet)
+        {
+            Console.Write("How much do you want to bet?: ");
+            return int.TryParse(Console.ReadLine(), out bet) && bet <= money;
+        }
 
+        /// <summary>
+        /// Asks to play another round or to quit.
+        /// </summary>
+        /// <param name="key">The <see cref="ConsoleKey"/> pressed</param>
+        /// <returns>If the quit key (<see cref="ConsoleKey.Q"/>) was pressed.</returns>
         private static bool PromptToContinue(ref ConsoleKey key)
         {
             Console.WriteLine($"Continue? (press {ConsoleKey.Q} to quit, or any other key to continue)");
             key = Console.ReadKey().Key;
             return key != ConsoleKey.Q;
         }
+        #endregion
 
-        private void DisplayFinalResults()
+        #region Turns
+        /// <summary>
+        /// Prompt the Player to hit or stay
+        /// </summary>
+        /// <returns>If the Player has gone over 21 and busted.</returns>
+        private bool PlayerTurn()
         {
-            Console.WriteLine($"You played {rounds} rounds, and came in with ${startingMoney}, you now have ${money}, resulting in a net of ${money - startingMoney}.");
+            ConsoleKey key;
+            byte value = CountValues(playerHand);
+            while (value <= 21 && (key = Console.ReadKey().Key) != ConsoleKey.Enter)
+            {
+                if (key == ConsoleKey.Spacebar)
+                {
+                    deck.TransferTopCard(playerHand);
+                    value = CountValues(playerHand);
+                    ShowHand(playerHand, false);
+                }
+            }
+            return value > 21;
         }
 
         /// <summary>
-        /// Determines if the hand goes over 21 (bust)
+        /// Have the dealer hit or stay, depending on it's <see cref="Deck"/>'s total value.
+        /// </summary>
+        private void DealerTurn()
+        {
+            while (CountValues(dealerHand) <= 16)
+            {
+                deck.TransferTopCard(dealerHand);
+            }
+        }
+        #endregion
+
+        #region Gameplay Functions
+        /// <summary>
+        /// Start each <see cref="Deck"/> with the 2 starting <see cref="Card"/>s.
+        /// </summary>
+        /// <param name="hand">The <see cref="List{Card}"/> to deal into.</param>
+        private void DealInitialCards(List<Card> hand)
+        {
+            deck.TransferTopCard(hand);
+            deck.TransferTopCard(hand);
+        }
+
+        /// <summary>
+        /// Figures out won the hand.
+        /// </summary>
+        /// <param name="playerValue">The value of the Player's <see cref="List{Card}"/>.</param>
+        /// <param name="dealerValue">The value of the Dealer's <see cref="List{Card}"/>.</param>
+        /// <param name="bet">How much the Player has bet.</param>
+        private void DetermineWinner(int playerValue, int dealerValue, int bet)
+        {
+            if (dealerValue > 21)
+            {
+                Console.WriteLine("Dealer busts! You win."); money += bet;
+            }
+            else if (playerValue > dealerValue)
+            {
+                Console.WriteLine($"You win! Dealer had {dealerValue}."); money += bet;
+            }
+            else if (dealerValue > playerValue)
+            {
+                Console.WriteLine($"Dealer wins with {dealerValue}. You lose {bet}."); money -= bet;
+            }
+            else
+            {
+                Console.WriteLine("It's a tie!");
+            }
+        }
+
+        /// <summary>
+        /// Determines if the given <see cref="List{Card}"/> has a <see cref="Card"/> that has a value of <see cref="Values.Ace"/>.
+        /// This is used to show the 2 possible values of a hand where an <see cref="Values.Ace"/> is counted as a 1 or 11.
         /// </summary>
         /// <param name="hand"></param>
-        /// <returns></returns>
+        /// <returns>If the <see cref="List{Card}"/> has an <see cref="Card"/> with a value of <see cref="Values.Ace"/></returns>
+        private static bool HasAce(List<Card> hand) => hand.Any(card => card.Value == Values.Ace);
+
+        /// <summary>
+        /// Determines if the hand goes over 21 (bust).
+        /// </summary>
+        /// <param name="hand"></param>
+        /// <returns>The value of the <see cref="Card"/>s in the <see cref="List{Card}"/>.</returns>
         private static byte CountValues(List<Card> hand)
         {
             byte totalValue = 0;
             foreach (Card card in hand)
             {
-                totalValue += (card.Value >= Card.Values.Jack) ? (byte)10 : (byte)card.Value;
+                totalValue += (card.Value >= Values.Jack) ? (byte)10 : (byte)card.Value;
             }
             return totalValue;
         }
+        #endregion
     }
 }

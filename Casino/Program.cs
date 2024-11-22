@@ -19,8 +19,7 @@ namespace Casino
 
                 Console.WriteLine("1.\tBlack Jack");
                 Console.WriteLine("2.\tWar");
-                Console.WriteLine("3.\tPoker");
-                Console.WriteLine("4.\tRoulette");
+                Console.WriteLine("3.\tRoulette");
                 Console.Write("What game do you want to play?: ");
 
                 key = Console.ReadKey().Key;
@@ -37,8 +36,6 @@ namespace Casino
                         money = war.Play();
                         break;
                     case ConsoleKey.D3 or ConsoleKey.NumPad3:
-                        break;
-                    case ConsoleKey.D4 or ConsoleKey.NumPad4:
                         Roulette roulette = new(money);
                         money = roulette.Play();
                         break;

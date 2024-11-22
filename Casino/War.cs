@@ -2,16 +2,42 @@
 
 namespace Casino
 {
+    /// <summary>
+    /// The <see cref="War"/> game <see cref="object"/>.
+    /// </summary>
     internal class War
     {
+        /// <summary>
+        /// The Deck the cards will be dealt from.
+        /// </summary>
         private Deck StartingDeck;
+        /// <summary>
+        /// The Player's hand.
+        /// </summary>
         private Deck Player;
+        /// <summary>
+        /// The CPU's hand.
+        /// </summary>
         private Deck CPU;
 
+        /// <summary>
+        /// How many round have been played.
+        /// </summary>
         private byte rounds = 0;
-        private int money;
-        private readonly int startingMoney;
 
+        /// <summary>
+        /// How much money you started with.
+        /// </summary>
+        private readonly int startingMoney;
+        /// <summary>
+        /// How much money you currently have.
+        /// </summary>
+        private int money;
+
+        /// <summary>
+        /// Initializes a game <see cref="War"/>.
+        /// </summary>
+        /// <param name="money">The starting money.</param>
         public War(int money)
         {
             StartingDeck = Deck.CreateFullDeck();
@@ -25,6 +51,10 @@ namespace Casino
             startingMoney = money;
         }
 
+        /// <summary>
+        /// Plays the game of <see cref="War"/>.
+        /// </summary>
+        /// <returns>The money left at the end of the rounds.</returns>
         public int Play()
         {
             int bet;
@@ -54,6 +84,12 @@ namespace Casino
             return money;
         }
 
+        #region Gameplay Function
+        /// <summary>
+        /// Compares 2 <see cref="Card"/>s to see who wins.
+        /// </summary>
+        /// <param name="player">The Player's <see cref="Card"/>.</param>
+        /// <param name="cpu">The CPU's <see cref="Card"/>.</param>
         private void CompareCards(Card player, Card cpu)
         {
             if (player.Value > cpu.Value)
@@ -72,21 +108,27 @@ namespace Casino
             }
         }
 
+        /// <summary>
+        /// Initiates a "War" between the players, where they both play 3 <see cref="Card"/>s and play a 4th <see cref="Card"/> to try and break the tie again.
+        /// </summary>
         private void BreakTie()
         {
             Console.WriteLine("Tie!");
 
-            if (Player.Count < 4)
+            if (Player.Count < 4 || CPU.Count < 4)
             {
-                Console.WriteLine("Player doesn't have enough cards to break the tie.  CPU Wins!");
-                CPU.DiscardCards(Player);
-                CPU.DiscardCards(StartingDeck);
-            }
-            if (CPU.Count < 4)
-            {
-                Console.WriteLine("CPU doesn't have enough cards to break the tie.  Player Wins!");
-                Player.DiscardCards(CPU);
-                Player.DiscardCards(StartingDeck);
+                if (Player.Count < 4)
+                {
+                    Console.WriteLine("Player doesn't have enough cards to break the tie.  CPU Wins!");
+                    CPU.DiscardCards(Player);
+                    CPU.DiscardCards(StartingDeck);
+                }
+                if (CPU.Count < 4)
+                {
+                    Console.WriteLine("CPU doesn't have enough cards to break the tie.  Player Wins!");
+                    Player.DiscardCards(CPU);
+                    Player.DiscardCards(StartingDeck);
+                }
             }
             else
             {
@@ -103,6 +145,11 @@ namespace Casino
             }
         }
 
+        /// <summary>
+        /// Plays the next 2 <see cref="Card"/>s and determines the winner.
+        /// </summary>
+        /// <param name="player">The Player's <see cref="Card"/>.</param>
+        /// <param name="cpu">The CPU's <see cref="Card"/>.</param>
         private void PlayCards(Card player, Card cpu)
         {
             player.DisplayCardWithColor();
@@ -115,5 +162,6 @@ namespace Casino
 
             CompareCards(player, cpu);
         }
+        #endregion
     }
 }

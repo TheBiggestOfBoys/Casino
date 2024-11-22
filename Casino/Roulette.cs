@@ -6,12 +6,29 @@ namespace Casino
 {
     internal class Roulette(int money)
     {
-        private readonly Dictionary<int, int> Bets = [];
+        /// <summary>
+        /// The bets on indices, with their values.
+        /// </summary>
+        private Dictionary<int, int> Bets = [];
 
+        /// <summary>
+        /// How many round have been played.
+        /// </summary>
         private byte rounds = 0;
+
+        /// <summary>
+        /// How much money you started with.
+        /// </summary>
         private readonly int startingMoney = money;
+        /// <summary>
+        /// How much money you currently have.
+        /// </summary>
         private int money = money;
 
+        /// <summary>
+        /// Plays the game of <see cref="Roulette"/>.
+        /// </summary>
+        /// <returns>The money left at the end of the rounds.</returns>
         public int Play()
         {
             Console.WriteLine("Press Q to exit");
@@ -36,13 +53,29 @@ namespace Casino
             return money;
         }
 
+        /// <summary>
+        /// Spins the wheel.
+        /// </summary>
+        /// <returns>A random index on the wheel.</returns>
+        private int Spin()
+        {
+            int number = new Random().Next(37);
+            PayOutBets(number);
+            return number;
+        }
+
+        #region Betting
+        /// <summary>
+        /// Sets up bets, until the quit key is pressed.
+        /// </summary>
         private void CreateBets()
         {
             Bets.Clear();
             ConsoleKey key;
             do
             {
-                AddBet(); ShowBets();
+                AddBet();
+                ShowBets();
                 Console.WriteLine("Press Enter to finish betting, D to delete a bet, E to edit a bet, or any other key to continue betting");
                 key = Console.ReadKey().Key;
                 ProcessBetEdit(key);
@@ -50,6 +83,9 @@ namespace Casino
             } while (key != ConsoleKey.Enter);
         }
 
+        /// <summary>
+        /// Adds a new bet to <see cref="Bets"/>, with the a value and bet amount.
+        /// </summary>
         private void AddBet()
         {
             Console.WriteLine("Enter number to bet on: ");
@@ -72,6 +108,10 @@ namespace Casino
             }
         }
 
+        /// <summary>
+        /// Edits or deletes a selected bet.
+        /// </summary>
+        /// <param name="key">The <see cref="ConsoleKey"/> that was pressed.</param>
         private void ProcessBetEdit(ConsoleKey key)
         {
             switch (key)
@@ -111,13 +151,22 @@ namespace Casino
             }
         }
 
-        private int Spin()
+        /// <summary>
+        /// Displays all active bets in <see cref="Bets"/>.
+        /// </summary>
+        private void ShowBets()
         {
-            int number = new Random().Next(37);
-            PayOutBets(number);
-            return number;
+            Console.WriteLine("Bets:");
+            Console.WriteLine("Number\t\tValue");
+            foreach (int number in Bets.Keys)
+            {
+                Console.BackgroundColor = ValueToColor(number);
+                Console.Write($"{number:00}");
+                Console.ResetColor();
+                Console.Write("\t\t$" + Bets[number]);
+                Console.WriteLine();
+            }
         }
-
         private void PayOutBets(int number)
         {
             foreach (KeyValuePair<int, int> kvp in Bets)
@@ -135,10 +184,19 @@ namespace Casino
             }
             Bets.Clear();
         }
+        #endregion
 
-
+        #region Color Wheel
+        /// <summary>
+        /// Get the <see cref="ConsoleColor"/> of the number.
+        /// </summary>
+        /// <param name="value">The number the determine.</param>
+        /// <returns><see cref="ConsoleColor.Red"/> if even, <see cref="ConsoleColor.DarkGray"/> if odd, and <see cref="ConsoleColor.Green"/> if 0.</returns>
         private static ConsoleColor ValueToColor(int value) => value == 0 ? ConsoleColor.Green : value % 2 == 0 ? ConsoleColor.DarkGray : ConsoleColor.Red;
 
+        /// <summary>
+        /// Highlights 9 random indices if the wheel, and highlights them on the wheel before arriving at the final index.
+        /// </summary>
         private static void HighlightRandom()
         {
             int[] randomIndices = new int[9];
@@ -157,6 +215,10 @@ namespace Casino
             }
         }
 
+        /// <summary>
+        /// Displays the wheel with the <see cref="ConsoleColor"/>s.
+        /// </summary>
+        /// <param name="highlightNumber">The index to highlight.</param>
         private static void DisplayWheel(int? highlightNumber)
         {
             for (int i = 0; i < 37; i++)
@@ -172,19 +234,6 @@ namespace Casino
             Console.ResetColor();
             Console.WriteLine();
         }
-
-        private void ShowBets()
-        {
-            Console.WriteLine("Bets:");
-            Console.WriteLine("Number\t\tValue");
-            foreach (int number in Bets.Keys)
-            {
-                Console.BackgroundColor = ValueToColor(number);
-                Console.Write($"{number:00}");
-                Console.ResetColor();
-                Console.Write("\t\t$" + Bets[number]);
-                Console.WriteLine();
-            }
-        }
+        #endregion
     }
 }
