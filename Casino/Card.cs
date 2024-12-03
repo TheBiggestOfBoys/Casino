@@ -19,6 +19,11 @@ namespace Casino
         public readonly Suits Suit = suit;
 
         /// <summary>
+        /// If the card is visible or not
+        /// </summary>
+        public bool IsHidden { get; private set; } = false;
+
+        /// <summary>
         /// The <see cref="char"/> of the <see cref="Suit"/>.
         /// </summary>
         public readonly char Symbol = GetSymbol(suit);
@@ -37,16 +42,27 @@ namespace Casino
         /// </summary>
         public void DisplayCardWithColor()
         {
-            Console.ForegroundColor = Color;
+            if (!IsHidden)
+            {
+                Console.ForegroundColor = Color;
+            }
             Console.Write(ToString());
             Console.ResetColor();
+        }
+
+        /// <summary>
+        /// Toggles this <see cref="Card"/>'s visibility.
+        /// </summary>
+        public void Flip()
+        {
+            IsHidden = !IsHidden;
         }
 
         /// <summary>
         /// Show the abbreviation of the card's <see cref="Suit"/> & <see cref="Value"/>.
         /// </summary>
         /// <returns>The <see cref="Suit"/>'s <see cref="char"/> & the <see cref="Value"/>'s <see cref="string"/>.</returns>
-        public override string ToString() => $"{Symbol}{Abbreviation}";
+        public override string ToString() => IsHidden ? "?" : Symbol + Abbreviation;
 
         #region Determine Methods
         /// <summary>

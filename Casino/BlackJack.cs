@@ -90,6 +90,7 @@ namespace Casino
             Console.WriteLine();
             Console.WriteLine("Current Hands:");
             ShowHand(playerHand, false);
+            HideDealerCards(dealerHand);
             ShowHand(dealerHand, true);
         }
 
@@ -123,14 +124,7 @@ namespace Casino
             Console.Write($"{playerName}'s hand: ");
             for (int i = 0; i < hand.Count; i++)
             {
-                if (isDealer && i > 0)
-                {
-                    Console.Write('?');
-                }
-                else
-                {
-                    hand[i].DisplayCardWithColor();
-                }
+                hand[i].DisplayCardWithColor();
             }
 
             if (!isDealer)
@@ -144,10 +138,29 @@ namespace Casino
             }
             else
             {
-                Console.Write(" (value: ?)");
+                Console.Write($" (value: {(int)hand[0].Value}+?)");
             }
 
             Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Hides all of the dealer's <see cref="Card"/>s except the first one.
+        /// </summary>
+        /// <param name="dealerHand">The dealer's hand to read cards from.</param>
+        private static void HideDealerCards(List<Card> dealerHand)
+        {
+            if (dealerHand[0].IsHidden)
+            {
+                dealerHand[0].Flip();
+            }
+            for (int i = 1; i < dealerHand.Count; i++)
+            {
+                if (!dealerHand[i].IsHidden)
+                {
+                    dealerHand[i].Flip();
+                }
+            }
         }
         #endregion
 
@@ -198,13 +211,33 @@ namespace Casino
         }
 
         /// <summary>
-        /// Have the dealer hit or stay, depending on it's <see cref="Deck"/>'s total value.
+        /// Have the dealer hit or stay, depending on its <see cref="Deck"/>'s total value.
         /// </summary>
         private void DealerTurn()
         {
-            while (CountValues(dealerHand) <= 16)
+            Random random = new();
+
+            while (true)
             {
-                deck.TransferTopCard(dealerHand);
+                int handValue = CountValues(dealerHand);
+
+                // Dealer stays if the hand value is 21 or more
+                if (handValue >= 21)
+                {
+                    break;
+                }
+
+                // Compute the hit probability using a linear scale
+                int hitProbability = Math.Max(0, 100 - (handValue * 5)); // 100% at 0, decreasing linearly to 0% at 20
+
+                if (random.Next(0, 100) < hitProbability)
+                {
+                    deck.TransferTopCard(dealerHand);
+                }
+                else
+                {
+                    break;
+                }
             }
         }
         #endregion

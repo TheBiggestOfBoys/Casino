@@ -20,6 +20,7 @@ namespace Casino
                 Console.WriteLine("1.\tBlack Jack");
                 Console.WriteLine("2.\tWar");
                 Console.WriteLine("3.\tRoulette");
+                Console.WriteLine("4.\tSlots");
                 Console.Write("What game do you want to play?: ");
 
                 key = Console.ReadKey().Key;
@@ -38,6 +39,10 @@ namespace Casino
                     case ConsoleKey.D3 or ConsoleKey.NumPad3:
                         Roulette roulette = new(money);
                         money = roulette.Play();
+                        break;
+                    case ConsoleKey.D4 or ConsoleKey.NumPad4:
+                        SlotMachine slots = new(money);
+                        money = slots.Play();
                         break;
                 }
             }
