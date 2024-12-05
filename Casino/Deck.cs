@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Casino
 {
@@ -8,6 +9,19 @@ namespace Casino
     /// </summary>
     internal class Deck : List<Card>
     {
+        #region Constructors
+        public Deck() { }
+
+        /// <summary>
+        /// Initializes the <see cref="Deck"/> with a user determined <see cref="List{Card}"/> of <see cref="Card"/>s.
+        /// </summary>
+        /// <param name="cards">The <see cref="List{Card}"/> of <see cref="Card"/>s to out in the <see cref="Deck"/>.</param>
+        public Deck(List<Card> cards)
+        {
+            AddRange(cards);
+        }
+        #endregion
+
         #region Deck management functions
         /// <summary>
         /// Creates an entire 52 <see cref="Card"/> deck of all <see cref="Card.Suits"/> and <see cref="Card.Values"/>.
@@ -40,17 +54,27 @@ namespace Casino
         }
 
         /// <summary>
-        /// Evenly distributes the <see cref="List{Card}"/>'s <see cref="Card"/>s between 2 <see cref="List{Card}"/>.
+        /// Evenly distributes the <see cref="Deck"/>'s <see cref="Card"/>s between 2 <see cref="List{Card}"/>.
         /// </summary>
         /// <param name="pile1">The first <see cref="List{Card}"/>.</param>
         /// <param name="pile2">The second <see cref="List{Card}"/>.</param>
-        public void Split(List<Card> pile1, List<Card> pile2)
+        public void Split(out List<Card> pile1, out List<Card> pile2)
         {
-            for (int i = 0; i < 26; i++)
-            {
-                TransferTopCard(pile1);
-                TransferTopCard(pile2);
-            }
+            int halfIndex = Count / 2;
+            pile1 = this.Take(halfIndex).ToList();
+            pile2 = this.Skip(halfIndex).ToList();
+        }
+
+        /// <summary>
+        /// Evenly distributes the <see cref="Deck"/>'s <see cref="Card"/>s between 2 <see cref="Deck"/>.
+        /// </summary>
+        /// <param name="pile1">The first <see cref="Deck"/>.</param>
+        /// <param name="pile2">The second <see cref="Deck"/>.</param>
+        public void Split(out Deck deck1, out Deck deck2)
+        {
+            int halfIndex = Count / 2;
+            deck1 = new(this.Take(halfIndex).ToList());
+            deck2 = new(this.Skip(halfIndex).ToList());
         }
         #endregion
 

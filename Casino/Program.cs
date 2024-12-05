@@ -21,6 +21,7 @@ namespace Casino
                 Console.WriteLine("2.\tWar");
                 Console.WriteLine("3.\tRoulette");
                 Console.WriteLine("4.\tSlots");
+                Console.WriteLine("5.\tSolitaire");
                 Console.Write("What game do you want to play?: ");
 
                 key = Console.ReadKey().Key;
@@ -43,6 +44,10 @@ namespace Casino
                     case ConsoleKey.D4 or ConsoleKey.NumPad4:
                         SlotMachine slots = new(money);
                         money = slots.Play();
+                        break;
+                    case ConsoleKey.D5 or ConsoleKey.NumPad5:
+                        Solitaire solitaire = new();
+                        money = solitaire.Play();
                         break;
                 }
             }

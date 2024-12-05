@@ -86,10 +86,8 @@ namespace Casino
         /// <returns>The corresponding <see cref="ConsoleColor"/>.</returns>
         private static ConsoleColor GetColor(Suits suit) => suit switch
         {
-            Suits.Hearts => ConsoleColor.Red,
-            Suits.Diamonds => ConsoleColor.Red,
-            Suits.Spades => ConsoleColor.DarkGray,
-            Suits.Clubs => ConsoleColor.DarkGray,
+            Suits.Hearts or Suits.Diamonds => ConsoleColor.Red,
+            Suits.Spades or Suits.Clubs => ConsoleColor.DarkGray,
             _ => ConsoleColor.White
         };
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Casino
 {
@@ -41,11 +42,9 @@ namespace Casino
         public War(int money)
         {
             StartingDeck = Deck.CreateFullDeck();
-            Player = [];
-            CPU = [];
 
             StartingDeck.Shuffle();
-            StartingDeck.Split(Player, CPU);
+            StartingDeck.Split(out Player, out CPU);
 
             this.money = money;
             startingMoney = money;
