@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Casino
+namespace Casino.Games
 {
-    internal class SlotMachine(int money)
+    public class SlotMachine(int money) : Game(money)
     {
         /// <summary>
         /// The symbols the wheel will spin on
@@ -12,64 +12,37 @@ namespace Casino
         private static readonly string[] allSymbols = ["7", "🍌", "🍉", "🔔", "BAR", "🍋", "🍊", "🍇", "🍒", "♥️", "♦️", "♠️", "♣️", "🍀", "?", "WIN", "👑", "🌟", "🧲"];
 
         /// <summary>
-        /// How many round have been played.
-        /// </summary>
-        private byte rounds = 0;
-
-        /// <summary>
-        /// How much money you started with.
-        /// </summary>
-        private readonly int startingMoney = money;
-        /// <summary>
-        /// How much money you currently have.
-        /// </summary>
-        private int money = money;
-
-        /// <summary>
         /// Plays the game of <see cref="SlotMachine"/>.
         /// </summary>
         /// <returns>The money left at the end of the rounds.</returns>
-        public int Play()
+        public override int CustomGameFlow(int bet)
         {
-            Console.WriteLine("Press Q to exit");
+            Console.WriteLine("Here are all possible symbols:");
+            Console.WriteLine(string.Join(' ', allSymbols));
+            Console.WriteLine("The more symbols you chose, the lower the bet will be, the higher the reward can be, bu lower chance of getting all matches.");
 
-            ConsoleKey key;
-            do
-            {
-                Console.WriteLine("Here are all possible symbols:");
-                Console.WriteLine(string.Join(' ', allSymbols));
-                Console.WriteLine("The more symbols you chose, the lower the bet will be, the higher the reward can be, bu lower chance of getting all matches.");
+            int numberOfSymbols;
+            do { Console.Write("How many symbols do you want to use: "); }
+            while (!int.TryParse(Console.ReadLine(), out numberOfSymbols));
 
-                int numberOfSymbols;
-                do { Console.Write("How many symbols do you want to use: "); }
-                while (!int.TryParse(Console.ReadLine(), out numberOfSymbols));
+            Console.Clear();
 
-                Console.Clear();
+            string[] symbols = MakeSymbolSet(numberOfSymbols);
 
-                string[] symbols = MakeSymbolSet(numberOfSymbols);
+            int maxWin = numberOfSymbols * 10 * bet;
 
-                int bet = numberOfSymbols * 5;
-                int maxWin = numberOfSymbols * 10;
+            Console.WriteLine($"With {numberOfSymbols} symbols the maximum win will be: {maxWin}.");
+            Console.WriteLine($"Winnings will be from $0 to {numberOfSymbols * 10}.");
+            Console.Clear();
 
-                Console.WriteLine($"With {numberOfSymbols} symbols the bet will be: {bet}.");
-                Console.WriteLine($"Winnings will be from $0 to {numberOfSymbols * 10}.");
-                Console.Clear();
+            Console.WriteLine("Round: " + Rounds);
+            Console.WriteLine($"Press Enter to spin: ");
+            Console.ReadKey();
+            Console.Clear();
 
-                Console.WriteLine("Round: " + rounds);
-                Console.WriteLine($"Press Enter to spin (${bet} per spin): ");
-                Console.ReadKey();
-                Console.Clear();
-
-                money -= bet;
-                money += Spin(numberOfSymbols, symbols);
-
-                rounds++;
-                Console.WriteLine("Continue? (press Q to quit, or any other key to continue)");
-                key = Console.ReadKey().Key;
-            } while (key != ConsoleKey.Q);
-
-            Console.WriteLine($"You played {rounds} rounds, and started with ${startingMoney}. You now have ${money}, resulting in a net of ${money - startingMoney}.");
-            return money;
+            int earnings = -bet;
+            earnings += Spin(numberOfSymbols, symbols);
+            return earnings;
         }
 
         /// <summary>

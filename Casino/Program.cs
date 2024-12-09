@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Casino.Games;
+using System;
 using System.Text;
 
 namespace Casino
 {
-    internal class Program
+    public class Program
     {
         static void Main()
         {
@@ -46,7 +47,7 @@ namespace Casino
                         money = slots.Play();
                         break;
                     case ConsoleKey.D5 or ConsoleKey.NumPad5:
-                        Solitaire solitaire = new();
+                        Solitaire solitaire = new(money);
                         money = solitaire.Play();
                         break;
                 }

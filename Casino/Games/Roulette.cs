@@ -2,55 +2,29 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Casino
+namespace Casino.Games
 {
-    internal class Roulette(int money)
+    public class Roulette(int money) : Game(money)
     {
         /// <summary>
         /// The bets on indices, with their values.
         /// </summary>
-        private Dictionary<int, int> Bets = [];
-
-        /// <summary>
-        /// How many round have been played.
-        /// </summary>
-        private byte rounds = 0;
-
-        /// <summary>
-        /// How much money you started with.
-        /// </summary>
-        private readonly int startingMoney = money;
-        /// <summary>
-        /// How much money you currently have.
-        /// </summary>
-        private int money = money;
+        private readonly Dictionary<int, int> Bets = [];
 
         /// <summary>
         /// Plays the game of <see cref="Roulette"/>.
         /// </summary>
         /// <returns>The money left at the end of the rounds.</returns>
-        public int Play()
+        public override int CustomGameFlow(int bet)
         {
-            Console.WriteLine("Press Q to exit");
-
-            ConsoleKey key;
-            do
-            {
-                CreateBets();
-                Console.WriteLine("Press Enter to spin: ");
-                DisplayWheel(null);
-                HighlightRandom();
-                int number = Spin();
-                Console.Clear();
-                DisplayWheel(number);
-
-                rounds++;
-                Console.WriteLine("Continue? (press Q to quit, or any other key to continue)");
-                key = Console.ReadKey().Key;
-            } while (key != ConsoleKey.Q);
-
-            Console.WriteLine($"You played {rounds} rounds, and started with ${startingMoney}. You now have ${money}, resulting in a net of ${money - startingMoney}.");
-            return money;
+            CreateBets();
+            Console.WriteLine("Press Enter to spin: ");
+            DisplayWheel(null);
+            HighlightRandom();
+            int number = Spin();
+            Console.Clear();
+            DisplayWheel(number);
+            return PayOutBets(number);
         }
 
         /// <summary>
@@ -167,22 +141,30 @@ namespace Casino
                 Console.WriteLine();
             }
         }
-        private void PayOutBets(int number)
+
+        /// <summary>
+        /// Return the money from all bets.
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        private int PayOutBets(int number)
         {
+            int earnings = 0;
             foreach (KeyValuePair<int, int> kvp in Bets)
             {
                 if (kvp.Key == number)
                 {
-                    money += kvp.Value;
+                    earnings += kvp.Value;
                     Console.WriteLine($"You won ${kvp.Value} on {kvp.Key}!");
                 }
                 else
                 {
-                    money -= kvp.Value;
+                    earnings -= kvp.Value;
                     Console.WriteLine($"You lost ${kvp.Value} on {kvp.Key}!");
                 }
             }
             Bets.Clear();
+            return earnings;
         }
         #endregion
 
@@ -223,7 +205,7 @@ namespace Casino
         {
             for (int i = 0; i < 37; i++)
             {
-                Console.BackgroundColor = (i == highlightNumber) ? ConsoleColor.Yellow : ValueToColor(i);
+                Console.BackgroundColor = i == highlightNumber ? ConsoleColor.Yellow : ValueToColor(i);
                 Console.Write($"{i:00}");
                 if (i == 18)
                 {

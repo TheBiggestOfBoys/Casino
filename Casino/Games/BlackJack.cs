@@ -1,84 +1,54 @@
-﻿using System;
+﻿using Casino.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Casino.Card;
+using static Casino.Objects.Card;
 
-namespace Casino
+namespace Casino.Games
 {
     /// <summary>
     /// The <see cref="BlackJack"/> game object.
     /// </summary>
     /// <param name="money">Home much money was brought in.</param>
-    internal class BlackJack(int money)
+    public class BlackJack(int money) : Game(money)
     {
         /// <summary>
         /// The Deck the cards will be dealt from.
         /// </summary>
-        private Deck deck = Deck.CreateFullDeck();
+        private readonly Deck DrawDeck = Deck.CreateFullDeck();
         /// <summary>
         /// The Player's hand.
         /// </summary>
-        private List<Card> playerHand = [];
+        private readonly List<Card> PlayerHand = [];
         /// <summary>
         /// The Dealer's hand (only one <see cref="Card"/> is visible).
         /// </summary>
-        private List<Card> dealerHand = [];
-
-        /// <summary>
-        /// How many round have been played.
-        /// </summary>
-        private byte rounds = 0;
-
-        /// <summary>
-        /// How much money you started with.
-        /// </summary>
-        private readonly int startingMoney = money;
-        /// <summary>
-        /// How much money you currently have.
-        /// </summary>
-        private int money = money;
+        private readonly List<Card> DealerHand = [];
 
         /// <summary>
         /// Plays the game of <see cref="BlackJack"/>.
         /// </summary>
         /// <returns>The money left at the end of the rounds.</returns>
-        public int Play()
+        public override int CustomGameFlow(int bet)
         {
-            deck.Shuffle(); ShowRules();
-            ConsoleKey key = ConsoleKey.Escape;
-            Console.WriteLine("Press Q to exit");
-            while (key != ConsoleKey.Q)
-            {
-                if (!PromptForBet(out int bet))
-                {
-                    continue;
-                }
+            DrawDeck.Shuffle();
 
-                DealInitialCards(playerHand);
-                DealInitialCards(dealerHand);
+            DealInitialCards(PlayerHand);
+            DealInitialCards(DealerHand);
+            ShowHands();
+
+            int playerValue = CountValues(PlayerHand);
+            int dealerValue = CountValues(DealerHand);
+            while (!PlayerTurn() && !DealerTurn())
+            {
+                playerValue = CountValues(PlayerHand);
+                dealerValue = CountValues(DealerHand);
                 ShowHands();
-                bool playerBust = PlayerTurn();
-                if (playerBust)
-                {
-                    Console.WriteLine($"You went over 21 and lost {bet}"); money -= bet;
-                }
-                else
-                {
-                    DealerTurn();
-                    ShowHands(); // Show final hands after dealer's turn
-                    int playerValue = CountValues(playerHand);
-                    int dealerValue = CountValues(dealerHand);
-                    DetermineWinner(playerValue, dealerValue, bet);
-                }
-                rounds++;
-                deck.DiscardCards(playerHand);
-                deck.DiscardCards(dealerHand);
-                if (!PromptToContinue(ref key))
-                {
-                    break;
-                }
             }
-            ShowFinalResults(); return money;
+            DrawDeck.DiscardCards(PlayerHand);
+            DrawDeck.DiscardCards(DealerHand);
+
+            return DetermineWinner(playerValue, dealerValue, bet);
         }
 
         #region Showing Functions
@@ -89,28 +59,20 @@ namespace Casino
         {
             Console.WriteLine();
             Console.WriteLine("Current Hands:");
-            ShowHand(playerHand, false);
-            HideDealerCards(dealerHand);
-            ShowHand(dealerHand, true);
+            ShowHand(PlayerHand, false);
+            HideDealerCards(DealerHand);
+            ShowHand(DealerHand, true);
         }
 
         /// <summary>
         /// Shows the rules of Black Jack.
         /// </summary>
-        private static void ShowRules()
+        public override void ShowRules()
         {
             Console.WriteLine("RULES OF BLACK JACK:");
             Console.WriteLine("The goal is to get to 21, or as close as possible.");
             Console.WriteLine("If you go over 21, you automatically lose.");
             Console.WriteLine("All face cards count as 10 and Aces can count as either 1 or 11");
-        }
-
-        /// <summary>
-        /// Shows the rounds played and profit gained/lost from all the games
-        /// </summary>
-        private void ShowFinalResults()
-        {
-            Console.WriteLine($"You played {rounds} rounds, and came in with ${startingMoney}, you now have ${money}, resulting in a net of ${money - startingMoney}.");
         }
 
         /// <summary>
@@ -164,81 +126,56 @@ namespace Casino
         }
         #endregion
 
-        #region Prompts
-        /// <summary>
-        /// Asks how much to bet.
-        /// </summary>
-        /// <param name="bet">How much to bet</param>
-        /// <returns>If the entered bet was valid.</returns>
-        private bool PromptForBet(out int bet)
-        {
-            Console.Write("How much do you want to bet?: ");
-            return int.TryParse(Console.ReadLine(), out bet) && bet <= money;
-        }
-
-        /// <summary>
-        /// Asks to play another round or to quit.
-        /// </summary>
-        /// <param name="key">The <see cref="ConsoleKey"/> pressed</param>
-        /// <returns>If the quit key (<see cref="ConsoleKey.Q"/>) was pressed.</returns>
-        private static bool PromptToContinue(ref ConsoleKey key)
-        {
-            Console.WriteLine($"Continue? (press {ConsoleKey.Q} to quit, or any other key to continue)");
-            key = Console.ReadKey().Key;
-            return key != ConsoleKey.Q;
-        }
-        #endregion
-
         #region Turns
         /// <summary>
         /// Prompt the Player to hit or stay
         /// </summary>
-        /// <returns>If the Player has gone over 21 and busted.</returns>
+        /// <returns>If the Player has gone over 21 and busted or if they stayed.</returns>
         private bool PlayerTurn()
         {
-            ConsoleKey key;
-            byte value = CountValues(playerHand);
-            while (value <= 21 && (key = Console.ReadKey().Key) != ConsoleKey.Enter)
+            int handValue = CountValues(PlayerHand);
+            if (handValue < 21)
             {
+                ConsoleKey key;
+                key = Console.ReadKey().Key;
                 if (key == ConsoleKey.Spacebar)
                 {
-                    deck.TransferTopCard(playerHand);
-                    value = CountValues(playerHand);
-                    ShowHand(playerHand, false);
+                    DrawDeck.TransferTopCard(PlayerHand);
+                    ShowHands();
+                }
+                else if (key == ConsoleKey.Enter)
+                {
+                    return false;
                 }
             }
-            return value > 21;
+            handValue = CountValues(PlayerHand);
+            return handValue > 21;
         }
 
         /// <summary>
         /// Have the dealer hit or stay, depending on its <see cref="Deck"/>'s total value.
         /// </summary>
-        private void DealerTurn()
+        /// <returns>If the Dealer has gone over 21 and busted or if they stayed.</returns>
+        private bool DealerTurn()
         {
             Random random = new();
 
-            while (true)
+            int handValue = CountValues(DealerHand);
+
+            if (handValue < 21)
             {
-                int handValue = CountValues(dealerHand);
-
-                // Dealer stays if the hand value is 21 or more
-                if (handValue >= 21)
-                {
-                    break;
-                }
-
                 // Compute the hit probability using a linear scale
-                int hitProbability = Math.Max(0, 100 - (handValue * 5)); // 100% at 0, decreasing linearly to 0% at 20
+                int hitProbability = Math.Max(0, 100 - handValue * 5); // 100% at 0, decreasing linearly to 0% at 20
 
                 if (random.Next(0, 100) < hitProbability)
                 {
-                    deck.TransferTopCard(dealerHand);
+                    DrawDeck.TransferTopCard(DealerHand);
+                    ShowHands();
                 }
-                else
-                {
-                    break;
-                }
+                else return false;
             }
+            handValue = CountValues(DealerHand);
+            return handValue > 21;
         }
         #endregion
 
@@ -249,8 +186,8 @@ namespace Casino
         /// <param name="hand">The <see cref="List{Card}"/> to deal into.</param>
         private void DealInitialCards(List<Card> hand)
         {
-            deck.TransferTopCard(hand);
-            deck.TransferTopCard(hand);
+            DrawDeck.TransferTopCard(hand);
+            DrawDeck.TransferTopCard(hand);
         }
 
         /// <summary>
@@ -259,23 +196,23 @@ namespace Casino
         /// <param name="playerValue">The value of the Player's <see cref="List{Card}"/>.</param>
         /// <param name="dealerValue">The value of the Dealer's <see cref="List{Card}"/>.</param>
         /// <param name="bet">How much the Player has bet.</param>
-        private void DetermineWinner(int playerValue, int dealerValue, int bet)
+        /// <returns>If someone has lost the game</returns>
+        private static int DetermineWinner(int playerValue, int dealerValue, int bet)
         {
-            if (dealerValue > 21)
+            if (dealerValue > playerValue)
             {
-                Console.WriteLine("Dealer busts! You win."); money += bet;
+                Console.WriteLine($"Dealer wins with {dealerValue}!  You lose ${bet}.");
+                return +bet;
             }
             else if (playerValue > dealerValue)
             {
-                Console.WriteLine($"You win! Dealer had {dealerValue}."); money += bet;
-            }
-            else if (dealerValue > playerValue)
-            {
-                Console.WriteLine($"Dealer wins with {dealerValue}. You lose {bet}."); money -= bet;
+                Console.WriteLine($"You win with{playerValue}!  You win {bet}.");
+                return -bet;
             }
             else
             {
-                Console.WriteLine("It's a tie!");
+                Console.WriteLine($"Tie!");
+                return 0;
             }
         }
 
@@ -297,7 +234,7 @@ namespace Casino
             byte totalValue = 0;
             foreach (Card card in hand)
             {
-                totalValue += (card.Value >= Values.Jack) ? (byte)10 : (byte)card.Value;
+                totalValue += card.Value >= Values.Jack ? (byte)10 : (byte)card.Value;
             }
             return totalValue;
         }

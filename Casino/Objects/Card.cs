@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace Casino
+namespace Casino.Objects
 {
     /// <summary>
     /// The <see cref="Card"/> <see cref="object"/> for card games.
     /// </summary>
     /// <param name="suit">The <see cref="Suits"/> of the <see cref="Card"/></param>
     /// <param name="value">The <see cref="Values"/> of the <see cref="Card"/></param>
-    internal class Card(Card.Suits suit, Card.Values value)
+    public class Card(Card.Suits suit, Card.Values value)
     {
         /// <summary>
         /// The <see cref="Values"/> of the <see cref="Card"/>
@@ -95,7 +95,7 @@ namespace Casino
         /// Gets the <see cref="string"/> representation of a <see cref="Values"/>.
         /// </summary>
         /// <param name="value">The <see cref="Values"/> to determine the <see cref="string"/> of.</param>
-        /// <returns>A number if the <see cref="Values"/> is less <= 10, or the first <see cref="char"/> of the <see cref="Card.Values"/>'s <see cref="string"/> representation.</returns>
+        /// <returns>A number if the <see cref="Values"/> is less <= 10, or the first <see cref="char"/> of the <see cref="Values"/>'s <see cref="string"/> representation.</returns>
         private static string GetAbbreviation(Values value) => value <= Values.Ten ? ((int)value).ToString() : value.ToString()[0].ToString();
         #endregion
 
@@ -103,7 +103,7 @@ namespace Casino
         /// <summary>
         /// The <see cref="Suits"/> of a <see cref="Card"/>.
         /// </summary>
-        internal enum Suits : byte
+        public enum Suits : byte
         {
             Hearts,
             Diamonds,
@@ -114,7 +114,7 @@ namespace Casino
         /// <summary>
         /// The <see cref="Values"/> of a <see cref="Card"/>, including number and face cards.
         /// </summary>
-        internal enum Values : byte
+        public enum Values : byte
         {
             Two = 2,
             Three = 3,

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Casino
+namespace Casino.Objects
 {
     /// <summary>
     /// Provides functions for managing a <see cref="List{Card}"/> of <see cref="Card"/>s.
     /// </summary>
-    internal class Deck : List<Card>
+    public class Deck : List<Card>
     {
         #region Constructors
         public Deck() { }
@@ -75,6 +75,7 @@ namespace Casino
             int halfIndex = Count / 2;
             deck1 = new(this.Take(halfIndex).ToList());
             deck2 = new(this.Skip(halfIndex).ToList());
+            Clear();
         }
         #endregion
 

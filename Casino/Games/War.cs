@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Casino.Objects;
+using System;
 
-namespace Casino
+namespace Casino.Games
 {
     /// <summary>
     /// The <see cref="War"/> game <see cref="object"/>.
     /// </summary>
-    internal class War
+    /// <param name="money">The starting money.</param>
+    public class War(int money) : Game(money)
     {
         /// <summary>
         /// The Deck the cards will be dealt from.
         /// </summary>
-        private Deck StartingDeck;
+        private Deck StartingDeck = Deck.CreateFullDeck();
         /// <summary>
         /// The Player's hand.
         /// </summary>
@@ -22,43 +23,18 @@ namespace Casino
         private Deck CPU;
 
         /// <summary>
-        /// How many round have been played.
+        /// The amount of attacks done.
         /// </summary>
-        private byte rounds = 0;
-
-        /// <summary>
-        /// How much money you started with.
-        /// </summary>
-        private readonly int startingMoney;
-        /// <summary>
-        /// How much money you currently have.
-        /// </summary>
-        private int money;
-
-        /// <summary>
-        /// Initializes a game <see cref="War"/>.
-        /// </summary>
-        /// <param name="money">The starting money.</param>
-        public War(int money)
-        {
-            StartingDeck = Deck.CreateFullDeck();
-
-            StartingDeck.Shuffle();
-            StartingDeck.Split(out Player, out CPU);
-
-            this.money = money;
-            startingMoney = money;
-        }
+        private int Plays = 0;
 
         /// <summary>
         /// Plays the game of <see cref="War"/>.
         /// </summary>
         /// <returns>The money left at the end of the rounds.</returns>
-        public int Play()
+        public override int CustomGameFlow(int bet)
         {
-            int bet;
-            do { Console.Write("How much do you want to bet?: "); }
-            while (!int.TryParse(Console.ReadLine(), out bet) && bet <= money);
+            StartingDeck.Shuffle();
+            StartingDeck.Split(out Player, out CPU);
             Console.WriteLine("Press ENTER to play a card");
             ConsoleKey key;
             while (Player.Count > 0 && CPU.Count > 0)
@@ -69,18 +45,15 @@ namespace Casino
                 {
                     PlayCards(Player[0], CPU[0]);
                 }
-                rounds++;
+                Plays++;
             }
-            if (Player.Count > 0)
-            {
-                money += bet;
-            }
-            else
-            {
-                money -= bet;
-            }
-            Console.WriteLine($"You played {rounds} rounds, and came in with ${startingMoney}, you now have ${money}, resulting in a net of ${money - startingMoney}.");
-            return money;
+            Player.DiscardCards(StartingDeck);
+            CPU.DiscardCards(StartingDeck);
+
+            Console.WriteLine($"Game ended with {Plays} plays.");
+            Plays = 0;
+
+            return Player.Count > 0 ? +bet : -bet;
         }
 
         #region Gameplay Function
