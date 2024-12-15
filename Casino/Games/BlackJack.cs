@@ -10,32 +10,23 @@ namespace Casino.Games
     /// The <see cref="BlackJack"/> game object.
     /// </summary>
     /// <param name="money">Home much money was brought in.</param>
-    public class BlackJack(int money) : Game(money)
+    public class BlackJack(int money) : CardGame(money)
     {
-        /// <summary>
-        /// The Deck the cards will be dealt from.
-        /// </summary>
-        private readonly Deck DrawDeck = Deck.CreateFullDeck();
         /// <summary>
         /// The Player's hand.
         /// </summary>
-        private readonly List<Card> PlayerHand = [];
+        private List<Card> PlayerHand = [];
         /// <summary>
         /// The Dealer's hand (only one <see cref="Card"/> is visible).
         /// </summary>
-        private readonly List<Card> DealerHand = [];
+        private List<Card> DealerHand = [];
 
-        /// <summary>
-        /// Plays the game of <see cref="BlackJack"/>.
-        /// </summary>
-        /// <returns>The money left at the end of the rounds.</returns>
+        /// <inheritdoc/>
         public override int CustomGameFlow(int bet)
         {
-            DrawDeck.Shuffle();
+            base.CustomGameFlow(bet);
 
-            DealInitialCards(PlayerHand);
-            DealInitialCards(DealerHand);
-            ShowHands();
+            DisplayGame();
 
             int playerValue = CountValues(PlayerHand);
             int dealerValue = CountValues(DealerHand);
@@ -43,19 +34,25 @@ namespace Casino.Games
             {
                 playerValue = CountValues(PlayerHand);
                 dealerValue = CountValues(DealerHand);
-                ShowHands();
+                DisplayGame();
             }
-            DrawDeck.DiscardCards(PlayerHand);
-            DrawDeck.DiscardCards(DealerHand);
+            MainDeck.DiscardCards(PlayerHand);
+            MainDeck.DiscardCards(DealerHand);
 
             return DetermineWinner(playerValue, dealerValue, bet);
         }
 
+        /// <inheritdoc/>
+        public override void Initialize()
+        {
+            base.Initialize();
+            DealInitialCards(PlayerHand);
+            DealInitialCards(DealerHand);
+        }
+
         #region Showing Functions
-        /// <summary>
-        /// Displays the Dealer & Player's hands.
-        /// </summary>
-        private void ShowHands()
+        /// <inheritdoc/>
+        public override void DisplayGame()
         {
             Console.WriteLine();
             Console.WriteLine("Current Hands:");
@@ -64,9 +61,7 @@ namespace Casino.Games
             ShowHand(DealerHand, true);
         }
 
-        /// <summary>
-        /// Shows the rules of Black Jack.
-        /// </summary>
+        /// <inheritdoc/>
         public override void ShowRules()
         {
             Console.WriteLine("RULES OF BLACK JACK:");
@@ -140,8 +135,8 @@ namespace Casino.Games
                 key = Console.ReadKey().Key;
                 if (key == ConsoleKey.Spacebar)
                 {
-                    DrawDeck.TransferTopCard(PlayerHand);
-                    ShowHands();
+                    MainDeck.TransferTopCard(PlayerHand);
+                    DisplayGame();
                 }
                 else if (key == ConsoleKey.Enter)
                 {
@@ -165,12 +160,12 @@ namespace Casino.Games
             if (handValue < 21)
             {
                 // Compute the hit probability using a linear scale
-                int hitProbability = Math.Max(0, 100 - handValue * 5); // 100% at 0, decreasing linearly to 0% at 20
+                int hitProbability = Math.Max(0, 100 - (handValue * 5)); // 100% at 0, decreasing linearly to 0% at 20
 
                 if (random.Next(0, 100) < hitProbability)
                 {
-                    DrawDeck.TransferTopCard(DealerHand);
-                    ShowHands();
+                    MainDeck.TransferTopCard(DealerHand);
+                    DisplayGame();
                 }
                 else return false;
             }
@@ -186,8 +181,8 @@ namespace Casino.Games
         /// <param name="hand">The <see cref="List{Card}"/> to deal into.</param>
         private void DealInitialCards(List<Card> hand)
         {
-            DrawDeck.TransferTopCard(hand);
-            DrawDeck.TransferTopCard(hand);
+            MainDeck.TransferTopCard(hand);
+            MainDeck.TransferTopCard(hand);
         }
 
         /// <summary>

@@ -7,34 +7,27 @@ namespace Casino.Games
     /// The <see cref="War"/> game <see cref="object"/>.
     /// </summary>
     /// <param name="money">The starting money.</param>
-    public class War(int money) : Game(money)
+    public class War(int money) : CardGame(money)
     {
-        /// <summary>
-        /// The Deck the cards will be dealt from.
-        /// </summary>
-        private Deck StartingDeck = Deck.CreateFullDeck();
         /// <summary>
         /// The Player's hand.
         /// </summary>
-        private Deck Player;
+        private Deck Player = [];
         /// <summary>
         /// The CPU's hand.
         /// </summary>
-        private Deck CPU;
+        private Deck CPU = [];
 
         /// <summary>
         /// The amount of attacks done.
         /// </summary>
         private int Plays = 0;
 
-        /// <summary>
-        /// Plays the game of <see cref="War"/>.
-        /// </summary>
-        /// <returns>The money left at the end of the rounds.</returns>
+        /// <inheritdoc/>
         public override int CustomGameFlow(int bet)
         {
-            StartingDeck.Shuffle();
-            StartingDeck.Split(out Player, out CPU);
+            base.CustomGameFlow(bet);
+
             Console.WriteLine("Press ENTER to play a card");
             ConsoleKey key;
             while (Player.Count > 0 && CPU.Count > 0)
@@ -47,13 +40,20 @@ namespace Casino.Games
                 }
                 Plays++;
             }
-            Player.DiscardCards(StartingDeck);
-            CPU.DiscardCards(StartingDeck);
+            Player.DiscardCards(MainDeck);
+            CPU.DiscardCards(MainDeck);
 
             Console.WriteLine($"Game ended with {Plays} plays.");
             Plays = 0;
 
             return Player.Count > 0 ? +bet : -bet;
+        }
+
+        /// <inheritdoc/>
+        public override void Initialize()
+        {
+            base.Initialize();
+            MainDeck.Split(out Player, out CPU);
         }
 
         #region Gameplay Function
@@ -67,12 +67,12 @@ namespace Casino.Games
             if (player.Value > cpu.Value)
             {
                 Console.WriteLine("Player Wins!");
-                Player.DiscardCards(StartingDeck);
+                Player.DiscardCards(MainDeck);
             }
             else if (player.Value < cpu.Value)
             {
                 Console.WriteLine("CPU Wins!");
-                CPU.DiscardCards(StartingDeck);
+                CPU.DiscardCards(MainDeck);
             }
             else
             {
@@ -93,13 +93,13 @@ namespace Casino.Games
                 {
                     Console.WriteLine("Player doesn't have enough cards to break the tie.  CPU Wins!");
                     CPU.DiscardCards(Player);
-                    CPU.DiscardCards(StartingDeck);
+                    CPU.DiscardCards(MainDeck);
                 }
                 if (CPU.Count < 4)
                 {
                     Console.WriteLine("CPU doesn't have enough cards to break the tie.  Player Wins!");
                     Player.DiscardCards(CPU);
-                    Player.DiscardCards(StartingDeck);
+                    Player.DiscardCards(MainDeck);
                 }
             }
             else
@@ -110,8 +110,8 @@ namespace Casino.Games
                     Console.Write("\t\t\t\t");
                     CPU[0].DisplayCardWithColor();
                     Console.WriteLine();
-                    Player.TransferTopCard(StartingDeck);
-                    CPU.TransferTopCard(StartingDeck);
+                    Player.TransferTopCard(MainDeck);
+                    CPU.TransferTopCard(MainDeck);
                 }
                 PlayCards(Player[0], CPU[0]);
             }
@@ -129,8 +129,8 @@ namespace Casino.Games
             cpu.DisplayCardWithColor();
             Console.WriteLine();
 
-            Player.TransferTopCard(StartingDeck);
-            CPU.TransferTopCard(StartingDeck);
+            Player.TransferTopCard(MainDeck);
+            CPU.TransferTopCard(MainDeck);
 
             CompareCards(player, cpu);
         }

@@ -9,6 +9,11 @@ namespace Casino.Objects
     /// </summary>
     public class Deck : List<Card>
     {
+        /// <summary>
+        /// Is an Ace the highest card (<c><see cref="Card.Value"/> == 14</c>) or the lowest card (<c><see cref="Card.Value"/> == 1</c>)?
+        /// </summary>
+        public readonly bool IsAceHighest;
+
         #region Constructors
         public Deck() { }
 
@@ -18,6 +23,25 @@ namespace Casino.Objects
         /// <param name="cards">The <see cref="List{Card}"/> of <see cref="Card"/>s to out in the <see cref="Deck"/>.</param>
         public Deck(List<Card> cards)
         {
+            AddRange(cards);
+            IsAceHighest = false;
+        }
+
+        /// <param name="isAceHighest">Is an Ace the highest card (14) or the lowest card (1)?</param>
+        public Deck(bool isAceHighest)
+        {
+            IsAceHighest = isAceHighest;
+            IsAceHighest = false;
+        }
+
+        /// <summary>
+        /// Initializes the <see cref="Deck"/> with a user determined <see cref="List{Card}"/> of <see cref="Card"/>s.
+        /// </summary>
+        /// <param name="cards">The <see cref="List{Card}"/> of <see cref="Card"/>s to out in the <see cref="Deck"/>.</param>
+        /// <param name="isAceHighest">Is an Ace the highest card (14) or the lowest card (1)?</param>
+        public Deck(List<Card> cards, bool isAceHighest)
+        {
+            IsAceHighest = isAceHighest;
             AddRange(cards);
         }
         #endregion
@@ -77,6 +101,23 @@ namespace Casino.Objects
             deck2 = new(this.Skip(halfIndex).ToList());
             Clear();
         }
+
+        /// <summary>
+        /// Gets the total value of the <see cref="Card"/>s in the <see cref="Deck"/>.
+        /// Includes logic for <see cref="IsAceHighest"/>.
+        /// </summary>
+        /// <returns>The total value</returns>
+        public int Value()
+        {
+            int value = 0;
+            foreach (Card card in this)
+            {
+                value += card.Value == Card.Values.Ace
+                    ? (IsAceHighest ? 14 : 1)
+                    : (int)card.Value;
+            }
+            return value;
+        }
         #endregion
 
         #region Show Functions
@@ -113,6 +154,27 @@ namespace Casino.Objects
             AddRange(hand);
             hand.Clear();
         }
+        #endregion
+
+        #region Operators
+        /// <summary>
+        /// Adding 2 deck together.  Basically just a nice shorthand
+        /// </summary>
+        /// <param name="deck1">The <see cref="Deck"/> to add to.</param>
+        /// <param name="deck2">The <see cref="Deck"/> to add from.</param>
+        /// <returns></returns>
+        public static Deck operator +(Deck deck1, Deck deck2)
+        {
+            deck1.AddRange(deck2);
+            return deck1;
+        }
+
+        /// <summary>
+        /// Gets the total value of the <see cref="Deck"/>
+        /// </summary>
+        /// <param name="deck"></param>
+        /// <param name="isAceHighest">Is an Ace the highest card (14) or the lowest card (1)?</param>
+        public static explicit operator int(Deck deck) => deck.Value();
         #endregion
     }
 }

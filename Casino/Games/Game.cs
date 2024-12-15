@@ -67,11 +67,24 @@ namespace Casino.Games
         #endregion
 
         /// <summary>
+        /// The logic for initializing the <see cref="CardGame"/>.
+        /// </summary>
+        public virtual void Initialize() { }
+
+        /// <summary>
+        /// Shows the current <see cref="Game"/>'s state.
+        /// </summary>
+        public virtual void DisplayGame() { }
+
+        /// <summary>
         /// Contains the <see cref="Game"/>'s logic, and if the <see cref="Game"/> should keep going.
         /// </summary>
-        /// <param name="key">The last <see cref="ConsoleKey"/> that was pressed.</param>
-        /// <returns>If they won the <see cref="Game"/></returns>
-        public virtual int CustomGameFlow(int bet) { return 0; }
+        /// <returns>The money won/lost</returns>
+        public virtual int CustomGameFlow(int bet)
+        {
+            Initialize();
+            return 0;
+        }
 
         /// <summary>
         /// Shows the rules of Black Jack.
